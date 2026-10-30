@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Wilgenhaven Bootverhuur</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: één smalle app-kolom (telefoon eerst), sticky kop met stappen, vaste actiebalk onderaan */
+:root{
+  --bg:#EDF2F0; --surface:#FFFFFF; --water:#D8E8E4; --ink:#13221F; --muted:#566763; --line:#CFDAD6;
+  --accent:#0E5C57; --accent-ink:#FFFFFF; --brass:#A9741A; --glass:#9CC7C1;
+  --ok:#2C7A4B; --ok-bg:#E1F1E7; --warn:#9A5400; --warn-bg:#FBEBD6; --err:#B3261E;
+  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0C1715; --surface:#14221F; --water:#103430; --ink:#E4EDEA; --muted:#97A9A4; --line:#273A36;
+  --accent:#5EC0B4; --accent-ink:#06231F; --brass:#DDB05A; --glass:#3C6E68;
+  --ok:#73C995; --ok-bg:#163526; --warn:#F2AA5C; --warn-bg:#3A2710; --err:#FF8A80; color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0C1715; --surface:#14221F; --water:#103430; --ink:#E4EDEA; --muted:#97A9A4; --line:#273A36;
+  --accent:#5EC0B4; --accent-ink:#06231F; --brass:#DDB05A; --glass:#3C6E68;
+  --ok:#73C995; --ok-bg:#163526; --warn:#F2AA5C; --warn-bg:#3A2710; --err:#FF8A80; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 132px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:560px;margin:0 auto}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.15}
+h1{font-size:2rem;font-weight:800;letter-spacing:-.01em}
+h2{font-size:1.4rem;font-weight:800}
+h3{font-size:1.05rem;font-weight:600}
+p{margin:0}
+.muted{color:var(--muted)}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* kop */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:12px 10px;display:grid;gap:10px}
+.brand{display:flex;align-items:center;gap:10px;min-height:40px}
+.brand .mark{width:34px;height:34px;flex:none}
+.brand b{font-family:var(--display);font-weight:800;font-size:1.15rem;line-height:1}
+.brand small{display:block;color:var(--muted);font-size:.78rem;letter-spacing:.06em;text-transform:uppercase}
+.back{margin-left:auto;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 14px;cursor:pointer;font-size:.9rem}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.steps span{font-size:.72rem;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);display:grid;gap:4px}
+.steps span::before{content:"";height:4px;border-radius:2px;background:var(--line)}
+.steps span.on{color:var(--ink);font-weight:700}
+.steps span.on::before,.steps span.done::before{background:var(--accent)}
+.proto{font-size:.8rem;color:var(--muted);border:1px dashed var(--line);border-radius:8px;padding:6px 10px}
+
+main{display:grid;gap:20px;padding-top:8px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:14px}
+label.lbl,.lbl{font-weight:700;font-size:.92rem;display:block}
+.field{display:grid;gap:6px}
+input[type=date],input[type=text],input[type=email],input[type=tel],select,textarea{
+  width:100%;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:11px 12px;min-height:46px}
+textarea{min-height:80px;resize:vertical}
+.err{color:var(--err);font-size:.85rem}
+.seg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.seg button{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:10px 4px;cursor:pointer;font-weight:700;font-size:.92rem}
+.seg button[aria-pressed=true]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.stepper{display:flex;align-items:center;gap:14px}
+.stepper button{width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:var(--bg);font-size:1.4rem;cursor:pointer;line-height:1}
+.stepper button:disabled{opacity:.4;cursor:default}
+.stepper output{font-family:var(--mono);font-size:1.5rem;min-width:2ch;text-align:center}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:380px){.row2{grid-template-columns:1fr}}
+
+.facts{display:grid;gap:10px;list-style:none;margin:0;padding:0}
+.facts li{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start;font-size:.95rem}
+.facts svg{width:24px;height:24px;color:var(--accent)}
+
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:.8rem;font-weight:700;border-radius:999px;padding:3px 10px;white-space:nowrap}
+.pill.ok{background:var(--ok-bg);color:var(--ok)}
+.pill.warn{background:var(--warn-bg);color:var(--warn)}
+.pill.neutral{background:var(--bg);color:var(--muted);border:1px solid var(--line)}
+
+.summary{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;font-size:.92rem}
+.summary .link{margin-left:auto;background:none;border:0;color:var(--accent);font-weight:700;cursor:pointer;padding:4px 0;text-decoration:underline;text-underline-offset:3px}
+
+.boats{display:grid;gap:14px}
+.boat{all:unset;box-sizing:border-box;display:grid;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;cursor:pointer;transition:border-color .15s,transform .15s}
+.boat:hover{border-color:var(--accent)}
+.boat:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.boat[aria-disabled=true]{cursor:default;opacity:.55}
+.boat[aria-disabled=true]:hover{border-color:var(--line)}
+.pic{display:block;background:var(--water);aspect-ratio:320/130;max-width:100%}
+.pic svg{display:block;width:100%;height:100%}
+.boat .body{display:grid;gap:8px;padding:14px 16px 16px}
+.boat .head{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.boat .name{font-family:var(--display);font-weight:800;font-size:1.3rem}
+.boat .price{font-family:var(--mono);font-size:1.15rem;white-space:nowrap}
+.boat .meta{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;font-size:.9rem;color:var(--muted)}
+.note{font-size:.9rem;color:var(--muted)}
+
+.specs{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;margin:0}
+.specs div{display:grid;gap:2px}
+.specs dt{font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.specs dd{margin:0;font-weight:700}
+.incl{margin:0;padding-left:1.2em;display:grid;gap:4px}
+.extra{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:10px;cursor:pointer;background:var(--bg)}
+.extra input{width:22px;height:22px;accent-color:var(--accent)}
+.extra small{display:block;color:var(--muted)}
+.extras{display:grid;gap:8px}
+
+.lines{display:grid;gap:6px;margin:0}
+.lines div{display:flex;justify-content:space-between;gap:12px}
+.lines dd{margin:0;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.lines dt{min-width:0}
+.lines .total{border-top:1px solid var(--line);padding-top:8px;margin-top:4px;font-weight:700}
+.lines .total dd{font-size:1.15rem}
+.check{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;cursor:pointer;font-size:.95rem}
+.check input{width:22px;height:22px;margin:0;accent-color:var(--accent)}
+
+.done{text-align:left;display:grid;gap:12px}
+.tick{width:56px;height:56px;border-radius:50%;background:var(--ok-bg);color:var(--ok);display:grid;place-items:center}
+.code{font-family:var(--mono);font-size:1.6rem;letter-spacing:.04em}
+
+/* actiebalk */
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--surface);border-top:1px solid var(--line);
+  padding-top:12px;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.bar .in{max-width:560px;margin:0 auto;display:flex;gap:14px;align-items:center}
+.bar .tot{display:grid;line-height:1.2}
+.bar .tot small{color:var(--muted);font-size:.78rem}
+.bar .tot b{font-family:var(--mono);font-size:1.15rem}
+.btn{flex:1;border:0;border-radius:12px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:1rem;padding:14px 18px;cursor:pointer;min-height:52px}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:var(--bg);color:var(--ink);border:1px solid var(--line)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="17" fill="var(--accent)"/><path d="M6 20q2.75-3 5.5 0t5.5 0 5.5 0 5.5 0" fill="none" stroke="var(--accent-ink)" stroke-width="2.4" stroke-linecap="round"/><path d="M11 15h12l-2 3h-8z" fill="var(--brass)"/></svg>
+      <div><b>Wilgenhaven</b><small>Bootverhuur</small></div>
+      <button class="back" id="back" data-act="back" hidden>← Terug</button>
+    </div>
+    <div class="steps" id="steps" aria-label="Voortgang"></div>
+  </header>
+  <main id="app" aria-live="polite"></main>
+</div>
+<div class="bar"><div class="in" id="bar"></div></div>
+
+<script>
+const BOATS = [
+  {id:'reiger', name:'Reiger', type:'Elektrische sloep', shape:'sloep', cap:8, rate:45, license:false, speed:'9 km/u', motor:'Elektrisch, fluisterstil',
+   desc:'Onze populairste sloep. Banken rondom, een tafel in het midden en genoeg plek voor een uitgebreide lunch aan boord.',
+   incl:['Tafel en kussens','Bluetooth-speaker','Zwemvesten voor iedereen']},
+  {id:'meerkoet', name:'Meerkoet', type:'Elektrische sloep met kap', shape:'kap', cap:10, rate:55, license:false, speed:'9 km/u', motor:'Elektrisch, fluisterstil',
+   desc:'Ruime sloep met een linnen kap. Gaat het miezeren, dan vaar je gewoon droog verder.',
+   incl:['Uitklapbare kap','Tafel en kussens','Bluetooth-speaker','Zwemvesten voor iedereen']},
+  {id:'fuut', name:'Fuut', type:'Tendersloep', shape:'tender', cap:12, rate:69, license:false, speed:'18 km/u', motor:'Elektrisch, 10 kW',
+   desc:'Onze grootste boot, geschikt voor een familiedag of uitje met collega’s. Blijft net onder de 20 km/u, dus geen vaarbewijs nodig.',
+   incl:['Zonnebed op het voordek','Tafel en kussens','Koelvak','Zwemvesten voor iedereen']},
+  {id:'ijsvogel', name:'IJsvogel', type:'Fluisterboot', shape:'fluister', cap:4, rate:29, license:false, speed:'6 km/u', motor:'Elektrisch, fluisterstil',
+   desc:'Klein en wendbaar. Ideaal om met z’n tweeën of vieren de smalle slootjes in te varen.',
+   incl:['Zonnekap','Kussens','Zwemvesten voor iedereen']},
+  {id:'aalscholver', name:'Aalscholver', type:'Speedboot', shape:'speed', cap:6, rate:95, license:true, speed:'45 km/u', motor:'Buitenboordmotor 60 pk',
+   desc:'Voor wie wat meer snelheid zoekt op het open water. Sneller dan 20 km/u, dus een Klein Vaarbewijs is verplicht.',
+   incl:['Volle tank bij vertrek','Zwemvesten voor iedereen','Korte vaaruitleg']},
+];
+const EXTRAS = [
+  {id:'picknick', name:'Picknickmand voor 4', sub:'Brood, kaas, fruit en drinken', price:39.5},
+  {id:'koelbox', name:'Koelbox met ijs', sub:'Neem je eigen drankjes mee', price:7.5},
+  {id:'dekens', name:'Fleecedekens', sub:'Handig in het najaar', price:0},
+  {id:'schipper', name:'Schipper aan boord', sub:'€ 35 per uur, jij hoeft niet te sturen', perHour:35},
+];
+const DURATIONS = [{h:2,label:'2 uur'},{h:3,label:'3 uur'},{h:4,label:'4 uur'},{h:8,label:'Hele dag'}];
+const DEPOSIT = 100;
+const STEP_LABELS = ['Zoeken','Boot','Extra’s','Gegevens'];
+
+const eur = n => new Intl.NumberFormat('nl-NL',{style:'currency',currency:'EUR'}).format(n);
+const iso = d => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const niceDate = s => new Date(s+'T12:00').toLocaleDateString('nl-NL',{weekday:'long',day:'numeric',month:'long'});
+const shortDate = s => new Date(s+'T12:00').toLocaleDateString('nl-NL',{weekday:'short',day:'numeric',month:'short'});
+const hh = h => String(h).padStart(2,'0')+':00';
+const esc = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+const today = new Date();
+const tomorrow = new Date(today); tomorrow.setDate(today.getDate()+1);
+
+const S = {step:0, date:iso(tomorrow), hours:3, start:13, people:6, boatId:null, extras:new Set(['dekens']),
+  name:'', email:'', phone:'', license:'', remark:'', agree:false, errors:{}, code:''};
+
+// Voorbeeldbezetting: per boot per dag één vaste geboekte periode, afgeleid van datum en boot
+function hash(s){let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619);}return h>>>0;}
+function busy(b,date){const h=hash(b.id+date); if(h%3===0) return null; const s=10+(h>>>3)%6; return [s,Math.min(18,s+2+(h>>>7)%3)];}
+function isFree(b){const x=busy(b,S.date); if(!x) return true; const end=S.start+S.hours; return end<=x[0]||S.start>=x[1];}
+const boat = () => BOATS.find(b=>b.id===S.boatId);
+const base = b => S.hours===8 ? b.rate*6 : b.rate*S.hours;
+const startOptions = () => { const out=[]; for(let h=10; h<=18-S.hours; h++) out.push(h); return out; };
+const endTime = () => S.start + S.hours;
+function lines(b){
+  const rows=[[`${b.name}, ${S.hours===8?'hele dag (dagprijs)':S.hours+' uur'}`, base(b)]];
+  for(const e of EXTRAS) if(S.extras.has(e.id)) rows.push([e.name + (e.perHour?` (${S.hours} uur)`:''), e.perHour? e.perHour*S.hours : e.price]);
+  return rows;
+}
+const total = b => lines(b).reduce((a,r)=>a+r[1],0);
+
+function boatSvg(shape){
+  const waves = `<path d="M0 110q20-7 40 0t40 0 40 0 40 0 40 0 40 0 40 0 40 0" fill="none" stroke="var(--accent)" stroke-opacity=".35" stroke-width="3"/><path d="M-20 122q20-6 40 0t40 0 40 0 40 0 40 0 40 0 40 0 40 0 40 0" fill="none" stroke="var(--accent)" stroke-opacity=".2" stroke-width="3"/>`;
+  const s = {
+    sloep:`<rect x="70" y="58" width="44" height="14" rx="4" fill="var(--brass)"/><rect x="196" y="58" width="56" height="14" rx="4" fill="var(--brass)"/><rect x="140" y="50" width="30" height="22" rx="3" fill="var(--glass)"/><path d="M28 72H292Q288 102 250 106H70Q36 104 28 72Z" fill="var(--accent)"/><path d="M28 72H292" stroke="var(--brass)" stroke-width="4" stroke-linecap="round"/>`,
+    kap:`<path d="M84 36Q160 18 236 36V42H84Z" fill="var(--muted)"/><path d="M90 42V72M230 42V72" stroke="var(--muted)" stroke-width="3"/><rect x="70" y="58" width="44" height="14" rx="4" fill="var(--brass)"/><rect x="196" y="58" width="56" height="14" rx="4" fill="var(--brass)"/><path d="M28 72H292Q288 102 250 106H70Q36 104 28 72Z" fill="var(--accent)"/><path d="M28 72H292" stroke="var(--brass)" stroke-width="4" stroke-linecap="round"/>`,
+    tender:`<rect x="40" y="62" width="70" height="10" rx="4" fill="var(--brass)"/><path d="M168 72L180 46H204L200 72Z" fill="var(--glass)"/><rect x="214" y="58" width="60" height="14" rx="4" fill="var(--brass)"/><path d="M16 72H304L296 84Q272 106 232 108H62Q26 104 16 72Z" fill="var(--accent)"/><path d="M16 72H304" stroke="var(--brass)" stroke-width="4" stroke-linecap="round"/>`,
+    fluister:`<path d="M104 46Q160 34 216 46V50H104Z" fill="var(--muted)"/><path d="M110 50V78M210 50V78" stroke="var(--muted)" stroke-width="3"/><rect x="122" y="64" width="76" height="14" rx="4" fill="var(--brass)"/><path d="M84 78H236Q232 102 208 104H110Q88 102 84 78Z" fill="var(--accent)"/><path d="M84 78H236" stroke="var(--brass)" stroke-width="4" stroke-linecap="round"/>`,
+    speed:`<path d="M148 78L174 52H196L188 78Z" fill="var(--glass)"/><rect x="200" y="64" width="40" height="14" rx="4" fill="var(--brass)"/><path d="M40 68l-6 10M26 80H40" stroke="var(--muted)" stroke-width="4" stroke-linecap="round"/><path d="M24 78H252Q290 76 304 64Q298 98 256 104H54Q30 100 24 78Z" fill="var(--accent)"/><path d="M60 92H280" stroke="var(--brass)" stroke-width="3"/>`
+  }[shape];
+  return `<svg viewBox="0 0 320 130" role="img" aria-label="Illustratie van de boot">${s}${waves}</svg>`;
+}
+
+const icons = {
+  pin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>',
+  wind:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8h11a3 3 0 1 0-3-3M3 12h16a3 3 0 1 1-3 3M3 16h8"/></svg>',
+  coin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M15 9.5a3 3 0 1 0 0 5M8 11h5M8 13h5"/></svg>',
+  card:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg>',
+};
+
+function render(){
+  const app = document.getElementById('app');
+  document.getElementById('back').hidden = !(S.step>0 && S.step<4);
+  document.getElementById('steps').innerHTML = STEP_LABELS.map((l,i)=>`<span class="${i===S.step?'on':i<S.step?'done':''}">${l}</span>`).join('');
+  document.getElementById('steps').hidden = S.step===4;
+  app.innerHTML = [viewSearch, viewList, viewDetail, viewForm, viewDone][S.step]();
+  renderBar();
+}
+
+function tripLine(){ return `<span class="mono">${shortDate(S.date)}</span> · <span class="mono">${hh(S.start)}–${hh(endTime())}</span> · ${S.people} ${S.people===1?'persoon':'personen'}`; }
+
+function viewSearch(){
+  return `
+  <section style="display:grid;gap:8px;padding-top:6px">
+    <h1>Een dag op het water, vanaf de Wilgenhaven</h1>
+    <p class="muted">Elektrische sloepen voor 4 tot 12 personen. Geen vaarbewijs nodig, behalve voor de speedboot.</p>
+  </section>
+  <p class="proto">Prototype met voorbeeldboten en -prijzen. Er wordt niets geboekt of betaald.</p>
+  <form class="card" id="search" onsubmit="event.preventDefault()">
+    <div class="field"><label class="lbl" for="date">Wanneer wil je varen?</label>
+      <input type="date" id="date" min="${iso(today)}" value="${S.date}"></div>
+    <div class="field"><span class="lbl" id="durlbl">Hoe lang?</span>
+      <div class="seg" role="group" aria-labelledby="durlbl">${DURATIONS.map(d=>`<button type="button" data-act="hours" data-h="${d.h}" aria-pressed="${S.hours===d.h}">${d.label}</button>`).join('')}</div></div>
+    <div class="row2">
+      <div class="field"><label class="lbl" for="start">Vertrektijd</label>
+        <select id="start" ${S.hours===8?'disabled':''}>${startOptions().map(h=>`<option value="${h}" ${h===S.start?'selected':''}>${hh(h)}</option>`).join('')}</select>
+        <span class="note">Terug om <span class="mono">${hh(endTime())}</span></span></div>
+      <div class="field"><span class="lbl">Aantal personen</span>
+        <div class="stepper"><button type="button" data-act="ppl" data-d="-1" aria-label="Eén persoon minder" ${S.people<=1?'disabled':''}>−</button>
+        <output id="ppl">${S.people}</output>
+        <button type="button" data-act="ppl" data-d="1" aria-label="Eén persoon meer" ${S.people>=12?'disabled':''}>+</button></div></div>
+    </div>
+  </form>
+  <ul class="facts">
+    <li>${icons.pin}<span><b>Opstappen aan de Wilgenkade 4.</b> Kom 15 minuten eerder voor een korte vaaruitleg.</span></li>
+    <li>${icons.coin}<span><b>Borg ${eur(DEPOSIT)}.</b> Je krijgt hem terug zodra de boot weer aan de steiger ligt.</span></li>
+    <li>${icons.wind}<span><b>Windkracht 6 of meer?</b> Dan annuleren wij kosteloos en krijg je alles terug.</span></li>
+  </ul>`;
+}
+
+function viewList(){
+  const fit = BOATS.filter(b=>b.cap>=S.people);
+  const tooSmall = BOATS.length - fit.length;
+  const free = fit.filter(isFree), taken = fit.filter(b=>!isFree(b));
+  const card = (b,ok) => {
+    const x = busy(b,S.date);
+    return `<button class="boat" ${ok?`data-act="pick" data-id="${b.id}"`:'aria-disabled="true" tabindex="-1"'}>
+      <span class="pic">${boatSvg(b.shape)}</span>
+      <span class="body">
+        <span class="head"><span class="name">${b.name}</span><span class="price">${eur(base(b))}</span></span>
+        <span class="meta"><span>${b.type}</span>·<span>max ${b.cap} pers.</span>
+          ${b.license?'<span class="pill warn">Vaarbewijs nodig</span>':'<span class="pill ok">Geen vaarbewijs</span>'}
+          ${ok?'':`<span class="pill neutral">Bezet <span class="mono">${hh(x[0])}–${hh(x[1])}</span></span>`}</span>
+      </span></button>`;
+  };
+  return `
+  <div class="summary">${tripLine()}<button class="link" data-act="goto" data-s="0">Wijzig</button></div>
+  <h2>${free.length ? `${free.length} ${free.length===1?'boot is':'boten zijn'} vrij` : 'Geen boot vrij op dit tijdstip'}</h2>
+  ${free.length?'':'<p class="muted">Probeer een andere vertrektijd of een andere dag.</p>'}
+  <div class="boats">${free.map(b=>card(b,true)).join('')}</div>
+  ${taken.length?`<h3 class="muted">Bezet op dit tijdstip</h3><div class="boats">${taken.map(b=>card(b,false)).join('')}</div>`:''}
+  ${tooSmall?`<p class="note">${tooSmall} ${tooSmall===1?'boot is':'boten zijn'} te klein voor ${S.people} personen en ${tooSmall===1?'wordt':'worden'} niet getoond.</p>`:''}`;
+}
+
+function viewDetail(){
+  const b = boat();
+  return `
+  <div class="summary">${tripLine()}</div>
+  <div class="card" style="padding:0;overflow:hidden;gap:0">
+    <div class="pic">${boatSvg(b.shape)}</div>
+    <div style="padding:16px;display:grid;gap:14px">
+      <div style="display:grid;gap:4px"><h1>${b.name}</h1><p class="muted">${b.type}</p></div>
+      <p>${b.desc}</p>
+      <dl class="specs">
+        <div><dt>Personen</dt><dd>max ${b.cap}</dd></div>
+        <div><dt>Snelheid</dt><dd class="mono">${b.speed}</dd></div>
+        <div><dt>Motor</dt><dd>${b.motor}</dd></div>
+        <div><dt>Vaarbewijs</dt><dd>${b.license?'Klein Vaarbewijs 1':'Niet nodig'}</dd></div>
+      </dl>
+      <div style="display:grid;gap:6px"><h3>Inbegrepen</h3><ul class="incl">${b.incl.map(i=>`<li>${i}</li>`).join('')}</ul></div>
+    </div>
+  </div>
+  <section style="display:grid;gap:10px">
+    <h2>Iets extra’s mee?</h2>
+    <div class="extras">${EXTRAS.map(e=>`
+      <label class="extra" for="x-${e.id}"><input type="checkbox" id="x-${e.id}" data-extra="${e.id}" ${S.extras.has(e.id)?'checked':''}>
+        <span><b>${e.name}</b><small>${e.sub}</small></span>
+        <span class="mono">${e.perHour?eur(e.perHour*S.hours):e.price?eur(e.price):'Gratis'}</span></label>`).join('')}</div>
+  </section>
+  <div class="card">${priceBlock(b)}</div>`;
+}
+
+function priceBlock(b){
+  return `<dl class="lines">${lines(b).map(([k,v])=>`<div><dt>${k}</dt><dd>${v?eur(v):'Gratis'}</dd></div>`).join('')}
+    <div class="total"><dt>Totaal</dt><dd>${eur(total(b))}</dd></div></dl>
+    <p class="note">Borg van ${eur(DEPOSIT)} betaal je bij het opstappen en krijg je na afloop terug.</p>`;
+}
+
+function viewForm(){
+  const b = boat(), E = S.errors;
+  const f = (id,label,type,auto,extra='') => `<div class="field"><label class="lbl" for="${id}">${label}</label>
+    <input type="${type}" id="${id}" autocomplete="${auto}" value="${esc(S[id])}" ${extra}>${E[id]?`<span class="err">${E[id]}</span>`:''}</div>`;
+  return `
+  <h2>Jouw gegevens</h2>
+  <form class="card" id="form" onsubmit="event.preventDefault()" novalidate>
+    ${f('name','Naam','text','name')}
+    ${f('email','E-mailadres','email','email','inputmode="email"')}
+    ${f('phone','Telefoonnummer','tel','tel','inputmode="tel"')}
+    ${b.license?f('license','Nummer van je vaarbewijs','text','off')+'<p class="note">Neem je vaarbewijs mee, we controleren het bij de steiger.</p>':''}
+    <div class="field"><label class="lbl" for="remark">Opmerking <span class="muted" style="font-weight:400">(optioneel)</span></label>
+      <textarea id="remark" placeholder="Bijvoorbeeld: we vieren een verjaardag">${esc(S.remark)}</textarea></div>
+    <label class="check" for="agree"><input type="checkbox" id="agree" ${S.agree?'checked':''}>
+      <span>Ik ga akkoord met de huurvoorwaarden. Gratis annuleren tot 24 uur voor vertrek.</span></label>
+    ${E.agree?`<span class="err">${E.agree}</span>`:''}
+  </form>
+  <section class="card">
+    <h3>${b.name} · ${niceDate(S.date)}</h3>
+    <p class="muted"><span class="mono">${hh(S.start)}–${hh(endTime())}</span> · ${S.people} personen</p>
+    ${priceBlock(b)}
+  </section>`;
+}
+
+function viewDone(){
+  const b = boat();
+  const bring = ['Een geldig legitimatiebewijs', ...(b.license?['Je Klein Vaarbewijs']:[]), 'Een warme jas, op het water is het frisser', `${eur(DEPOSIT)} borg (pin of contant)`];
+  return `
+  <section class="done">
+    <div class="tick"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+    <h1>Je boeking staat vast</h1>
+    <p class="muted">We hebben een bevestiging gestuurd naar <b>${esc(S.email)}</b>. <span class="note">(In dit prototype wordt geen e-mail verstuurd.)</span></p>
+  </section>
+  <div class="card">
+    <div><span class="lbl muted" style="font-weight:400">Boekingsnummer</span><div class="code">${S.code}</div></div>
+    <dl class="specs">
+      <div><dt>Boot</dt><dd>${b.name}</dd></div>
+      <div><dt>Personen</dt><dd>${S.people}</dd></div>
+      <div><dt>Datum</dt><dd>${niceDate(S.date)}</dd></div>
+      <div><dt>Tijd</dt><dd class="mono">${hh(S.start)}–${hh(endTime())}</dd></div>
+    </dl>
+    ${priceBlock(b)}
+  </div>
+  <section class="card">
+    <h3>Neem dit mee</h3>
+    <ul class="incl">${bring.map(x=>`<li>${x}</li>`).join('')}</ul>
+    <ul class="facts"><li>${icons.pin}<span>Wilgenkade 4. Kom om <b class="mono">${String(S.start-1).padStart(2,'0')}:45</b>, dan krijg je eerst een korte vaaruitleg.</span></li></ul>
+  </section>`;
+}
+
+function renderBar(){
+  const bar = document.getElementById('bar'), b = boat();
+  const tot = (label,amount) => `<div class="tot"><small>${label}</small><b>${amount}</b></div>`;
+  bar.innerHTML = [
+    () => `<button class="btn" data-act="find">Toon beschikbare boten</button>`,
+    () => `<button class="btn ghost" data-act="goto" data-s="0">Andere tijd kiezen</button>`,
+    () => tot('Totaal', eur(total(b))) + `<button class="btn" data-act="goto" data-s="3">Verder</button>`,
+    () => tot('Totaal', eur(total(b))) + `<button class="btn" data-act="pay">Betalen met iDEAL</button>`,
+    () => `<button class="btn ghost" data-act="reset">Nieuwe boeking maken</button>`,
+  ][S.step]();
+}
+
+function go(step){ S.step = step; S.errors = {}; render(); window.scrollTo({top:0}); }
+
+function validate(){
+  const E = {};
+  if(!S.name.trim()) E.name = 'Vul je naam in.';
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(S.email.trim())) E.email = 'Vul een geldig e-mailadres in, bijvoorbeeld naam@voorbeeld.nl.';
+  if(S.phone.replace(/\D/g,'').length < 10) E.phone = 'Vul een telefoonnummer van minstens 10 cijfers in.';
+  if(boat().license && !S.license.trim()) E.license = 'Voor deze boot is een vaarbewijs verplicht.';
+  if(!S.agree) E.agree = 'Ga akkoord met de huurvoorwaarden om te boeken.';
+  return E;
+}
+
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-act]'); if(!t) return;
+  const a = t.dataset.act;
+  if(a==='hours'){ S.hours=+t.dataset.h; const o=startOptions(); if(!o.includes(S.start)) S.start=o[o.length-1]; if(S.hours===8) S.start=10; render(); }
+  else if(a==='ppl'){ S.people=Math.min(12,Math.max(1,S.people+ +t.dataset.d)); render(); }
+  else if(a==='find') go(1);
+  else if(a==='pick'){ S.boatId=t.dataset.id; go(2); }
+  else if(a==='goto') go(+t.dataset.s);
+  else if(a==='back') go(S.step-1);
+  else if(a==='pay'){
+    S.errors = validate();
+    if(Object.keys(S.errors).length){ render(); const first=document.querySelector('.err'); first && first.scrollIntoView({block:'center'}); return; }
+    S.code = 'WH-' + S.date.slice(5).replace('-','') + '-' + String(1000+Math.floor(Math.random()*9000));
+    go(4);
+  }
+  else if(a==='reset'){ Object.assign(S,{boatId:null,extras:new Set(['dekens']),name:'',email:'',phone:'',license:'',remark:'',agree:false,code:''}); go(0); }
+});
+
+document.addEventListener('change', e => {
+  const t = e.target;
+  if(t.id==='date'){ S.date = t.value || iso(tomorrow); }
+  else if(t.id==='start'){ S.start = +t.value; render(); }
+  else if(t.dataset.extra){ t.checked ? S.extras.add(t.dataset.extra) : S.extras.delete(t.dataset.extra); render(); }
+  else if(t.id==='agree'){ S.agree = t.checked; }
+});
+document.addEventListener('input', e => {
+  const t = e.target;
+  if(['name','email','phone','license','remark'].includes(t.id)) S[t.id] = t.value;
+});
+
+render();
+</script>
+</body>
+</html>
