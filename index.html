@@ -82,7 +82,10 @@ textarea{min-height:80px;resize:vertical}
 .stepper button{width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:var(--bg);font-size:1.4rem;cursor:pointer;line-height:1}
 .stepper button:disabled{opacity:.4;cursor:default}
 .stepper output{font-family:var(--mono);font-size:1.5rem;min-width:2ch;text-align:center}
-.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+/* minmax(0,…) en min-width:0 laten velden (zoals datumvelden) meekrimpen, zodat niets breder wordt dan het scherm */
+.row2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.row2>*,.card>*{min-width:0}
+input,select{min-width:0}
 @media (max-width:380px){.row2{grid-template-columns:1fr}}
 
 .facts{display:grid;gap:10px;list-style:none;margin:0;padding:0}
