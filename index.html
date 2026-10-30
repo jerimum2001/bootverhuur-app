@@ -11,28 +11,33 @@
 <style>
 /* Layout: één smalle app-kolom (telefoon eerst), sticky kop met stappen, vaste actiebalk onderaan */
 :root{
-  --bg:#EDF2F0; --surface:#FFFFFF; --water:#D8E8E4; --ink:#13221F; --muted:#566763; --line:#CFDAD6;
-  --accent:#0E5C57; --accent-ink:#FFFFFF; --brass:#A9741A; --glass:#9CC7C1;
+  --bg:#EAF4F6; --surface:#FFFFFF; --water:#D3ECEF; --ink:#0F2328; --muted:#4F666C; --line:#C9DDE1;
+  --accent:#00788A; --accent-ink:#FFFFFF; --brass:#A9741A; --glass:#8FCFD8;
   --ok:#2C7A4B; --ok-bg:#E1F1E7; --warn:#9A5400; --warn-bg:#FBEBD6; --err:#B3261E;
   --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
   --body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#0C1715; --surface:#14221F; --water:#103430; --ink:#E4EDEA; --muted:#97A9A4; --line:#273A36;
-  --accent:#5EC0B4; --accent-ink:#06231F; --brass:#DDB05A; --glass:#3C6E68;
+  --bg:#0A171B; --surface:#112329; --water:#0D3640; --ink:#E2EEF1; --muted:#93AAB0; --line:#243B42;
+  --accent:#3FC6D6; --accent-ink:#04232A; --brass:#DDB05A; --glass:#2F6E79;
   --ok:#73C995; --ok-bg:#163526; --warn:#F2AA5C; --warn-bg:#3A2710; --err:#FF8A80; color-scheme:dark;
 }}
 :root[data-theme="dark"]{
-  --bg:#0C1715; --surface:#14221F; --water:#103430; --ink:#E4EDEA; --muted:#97A9A4; --line:#273A36;
-  --accent:#5EC0B4; --accent-ink:#06231F; --brass:#DDB05A; --glass:#3C6E68;
+  --bg:#0A171B; --surface:#112329; --water:#0D3640; --ink:#E2EEF1; --muted:#93AAB0; --line:#243B42;
+  --accent:#3FC6D6; --accent-ink:#04232A; --brass:#DDB05A; --glass:#2F6E79;
   --ok:#73C995; --ok-bg:#163526; --warn:#F2AA5C; --warn-bg:#3A2710; --err:#FF8A80; color-scheme:dark;
 }
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 132px}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
-.wrap{max-width:560px;margin:0 auto}
+.wrap{max-width:560px;margin:0 auto;position:relative}
+.scene{position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none}
+/* leesbaarheid: half-doorzichtig, vervaagd paneel achter de app-kolom, zodat tekst nooit direct op de tekening staat */
+.wrap::before{content:"";position:absolute;inset:0 -16px -24px;z-index:-1;pointer-events:none;
+  background:color-mix(in srgb,var(--bg) 88%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+@media (min-width:600px){.wrap::before{inset:0 -28px -28px;border-radius:0 0 28px 28px}}
 h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.15}
 h1{font-size:2rem;font-weight:800;letter-spacing:-.01em}
 h2{font-size:1.4rem;font-weight:800}
@@ -145,6 +150,38 @@ textarea{min-height:80px;resize:vertical}
 </style>
 </head>
 <body>
+
+<!-- Achtergrond: haven met zeilboot en sloep, getekend met de themakleuren -->
+<svg class="scene" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false">
+  <circle cx="1090" cy="150" r="60" fill="var(--brass)" opacity=".18"/>
+  <g fill="var(--surface)" opacity=".7">
+    <ellipse cx="220" cy="150" rx="90" ry="22"/><ellipse cx="280" cy="135" rx="60" ry="20"/>
+    <ellipse cx="760" cy="110" rx="70" ry="16"/>
+  </g>
+  <path d="M0 520 Q 300 500 600 515 T 1200 510 V800 H0Z" fill="var(--water)"/>
+  <path d="M0 610 Q 150 590 300 610 T 600 610 T 900 610 T 1200 610 V800 H0Z" fill="var(--glass)" opacity=".45"/>
+  <path d="M0 700 Q 150 680 300 700 T 600 700 T 900 700 T 1200 700 V800 H0Z" fill="var(--glass)" opacity=".7"/>
+  <!-- steiger -->
+  <g fill="var(--brass)" opacity=".55">
+    <rect x="40" y="500" width="300" height="12" rx="3"/>
+    <rect x="70" y="512" width="10" height="70"/><rect x="190" y="512" width="10" height="70"/><rect x="310" y="512" width="10" height="70"/>
+  </g>
+  <!-- zeilboot -->
+  <g transform="translate(925 330) scale(.85)">
+    <rect x="128" y="0" width="7" height="250" rx="2" fill="var(--ink)" opacity=".75"/>
+    <path d="M124 14 L124 236 L10 236 Z" fill="var(--surface)" stroke="var(--line)" stroke-width="3"/>
+    <path d="M140 40 L140 236 L236 236 Z" fill="var(--surface)" opacity=".85" stroke="var(--line)" stroke-width="3"/>
+    <path d="M-20 250 H290 L250 300 H20 Z" fill="var(--accent)"/>
+    <path d="M-20 250 H290 L284 258 H-13 Z" fill="var(--brass)" opacity=".8"/>
+    <path d="M10 318 Q 60 308 130 318 T 260 318" fill="none" stroke="var(--surface)" stroke-width="4" stroke-linecap="round" opacity=".6"/>
+  </g>
+  <!-- sloep -->
+  <g transform="translate(120 590)">
+    <path d="M0 0 H170 L150 34 H18 Z" fill="var(--surface)" stroke="var(--accent)" stroke-width="4"/>
+    <rect x="60" y="-26" width="60" height="26" rx="5" fill="var(--accent)" opacity=".85"/>
+    <path d="M10 46 Q 50 38 90 46 T 170 46" fill="none" stroke="var(--surface)" stroke-width="3" stroke-linecap="round" opacity=".6"/>
+  </g>
+</svg>
 
 <div class="wrap">
   <header class="top">
