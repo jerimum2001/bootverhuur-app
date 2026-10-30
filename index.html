@@ -56,6 +56,11 @@ button,input,select,textarea{font:inherit;color:inherit}
 .steps span.on{color:var(--ink);font-weight:700}
 .steps span.on::before,.steps span.done::before{background:var(--accent)}
 .proto{font-size:.8rem;color:var(--muted);border:1px dashed var(--line);border-radius:8px;padding:6px 10px}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px}
+.modes button{border:0;background:none;border-radius:9px;padding:10px 6px;font-weight:700;cursor:pointer;color:var(--muted)}
+.modes button[aria-selected=true]{background:var(--accent);color:var(--accent-ink)}
+.dims{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media (max-width:380px){.dims{grid-template-columns:1fr}}
 
 main{display:grid;gap:20px;padding-top:8px}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:14px}
@@ -192,7 +197,7 @@ const esc = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const today = new Date();
 const tomorrow = new Date(today); tomorrow.setDate(today.getDate()+1);
 
-const S = {step:0, date:iso(tomorrow), hours:3, start:13, people:6, boatId:null, extras:new Set(['dekens']),
+const S = {mode:'huur', step:0, date:iso(tomorrow), hours:3, start:13, people:6, boatId:null, extras:new Set(['dekens']),
   name:'', email:'', phone:'', license:'', remark:'', agree:false, errors:{}, code:''};
 
 // Voorbeeldbezetting: per boot per dag één vaste geboekte periode, afgeleid van datum en boot
@@ -227,15 +232,24 @@ const icons = {
   wind:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8h11a3 3 0 1 0-3-3M3 12h16a3 3 0 1 1-3 3M3 16h8"/></svg>',
   coin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M15 9.5a3 3 0 1 0 0 5M8 11h5M8 13h5"/></svg>',
   card:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg>',
+  radio:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="6" y="9" width="12" height="12" rx="2"/><path d="M9 9V3M9 14h6M9 17h6"/></svg>',
 };
 
 function render(){
-  const app = document.getElementById('app');
-  document.getElementById('back').hidden = !(S.step>0 && S.step<4);
-  document.getElementById('steps').innerHTML = STEP_LABELS.map((l,i)=>`<span class="${i===S.step?'on':i<S.step?'done':''}">${l}</span>`).join('');
-  document.getElementById('steps').hidden = S.step===4;
-  app.innerHTML = [viewSearch, viewList, viewDetail, viewForm, viewDone][S.step]();
+  const app = document.getElementById('app'), M = MODES[S.mode], done = S.step===M.views.length-1;
+  const steps = document.getElementById('steps');
+  document.getElementById('back').hidden = !(S.step>0 && !done);
+  steps.style.gridTemplateColumns = `repeat(${M.labels.length},1fr)`;
+  steps.innerHTML = M.labels.map((l,i)=>`<span class="${i===S.step?'on':i<S.step?'done':''}">${l}</span>`).join('');
+  steps.hidden = done;
+  app.innerHTML = (S.step===0 ? modeSwitch() : '') + M.views[S.step]();
   renderBar();
+}
+
+function modeSwitch(){
+  return `<div class="modes" role="tablist" aria-label="Wat wil je doen?">
+    <button role="tab" data-act="mode" data-m="huur" aria-selected="${S.mode==='huur'}">Boot huren</button>
+    <button role="tab" data-act="mode" data-m="passant" aria-selected="${S.mode==='passant'}">Ligplaats als passant</button></div>`;
 }
 
 function tripLine(){ return `<span class="mono">${shortDate(S.date)}</span> · <span class="mono">${hh(S.start)}–${hh(endTime())}</span> · ${S.people} ${S.people===1?'persoon':'personen'}`; }
@@ -321,10 +335,12 @@ function viewDetail(){
   <div class="card">${priceBlock(b)}</div>`;
 }
 
+function priceTable(rows){
+  return `<dl class="lines">${rows.map(([k,v])=>`<div><dt>${k}</dt><dd>${v?eur(v):'Gratis'}</dd></div>`).join('')}
+    <div class="total"><dt>Totaal</dt><dd>${eur(rows.reduce((a,r)=>a+r[1],0))}</dd></div></dl>`;
+}
 function priceBlock(b){
-  return `<dl class="lines">${lines(b).map(([k,v])=>`<div><dt>${k}</dt><dd>${v?eur(v):'Gratis'}</dd></div>`).join('')}
-    <div class="total"><dt>Totaal</dt><dd>${eur(total(b))}</dd></div></dl>
-    <p class="note">Borg van ${eur(DEPOSIT)} betaal je bij het opstappen en krijg je na afloop terug.</p>`;
+  return priceTable(lines(b)) + `<p class="note">Borg van ${eur(DEPOSIT)} betaal je bij het opstappen en krijg je na afloop terug.</p>`;
 }
 
 function viewForm(){
@@ -378,6 +394,7 @@ function viewDone(){
 }
 
 function renderBar(){
+  if(S.mode==='passant'){ renderBerthBar(); return; }
   const bar = document.getElementById('bar'), b = boat();
   const tot = (label,amount) => `<div class="tot"><small>${label}</small><b>${amount}</b></div>`;
   bar.innerHTML = [
@@ -387,6 +404,193 @@ function renderBar(){
     () => tot('Totaal', eur(total(b))) + `<button class="btn" data-act="pay">Betalen met iDEAL</button>`,
     () => `<button class="btn ghost" data-act="reset">Nieuwe boeking maken</button>`,
   ][S.step]();
+}
+
+// Passanten: aanmelden voor een ligplaats in de haven
+const BERTH = {perMeter:2.10, dayPerMeter:1.00, minLen:8, tax:1.85, power:3.50, dayPower:2.00, maxLen:15, maxBeam:4.5, maxDraft:1.6, maxNights:14};
+const dayAfter = new Date(today); dayAfter.setDate(today.getDate()+2);
+const P = {arrive:iso(tomorrow), depart:iso(dayAfter), people:2, power:true, vname:'', vtype:'Motorboot', vlength:'', vbeam:'', vdraft:'',
+  pname:'', pemail:'', pphone:'', premark:'', agree:false, code:'', berth:''};
+const P_FIELDS = ['vname','vlength','vbeam','vdraft','pname','pemail','pphone','premark'];
+const num = v => parseFloat(String(v).trim().replace(',','.'));
+const nights = () => Math.round((new Date(P.depart+'T12:00') - new Date(P.arrive+'T12:00')) / 864e5);
+const plural = (n,one,many) => `${n} ${n===1?one:many}`;
+
+function nightsText(){
+  const n = nights();
+  if(n<0) return 'Je vertrekdatum ligt voor je aankomstdatum.';
+  if(n===0) return 'Dagligplaats: je legt aan en vertrekt op dezelfde dag, uiterlijk om 20:00.';
+  return `${plural(n,'nacht','nachten')}, van ${niceDate(P.arrive)} tot ${niceDate(P.depart)}.`;
+}
+function stayLine(){
+  const n = nights();
+  return `<span class="mono">${shortDate(P.arrive)}${n>0?' – '+shortDate(P.depart):''}</span> · ${n===0?'dagligplaats':plural(n,'nacht','nachten')} · ${plural(P.people,'persoon','personen')}`;
+}
+function berthLines(){
+  const len = num(P.vlength); if(!(len>0)) return null;
+  const m = Math.max(BERTH.minLen, Math.ceil(len)), n = nights(), rows = [];
+  if(n===0){
+    rows.push([`Dagligplaats, ${m} m × ${eur(BERTH.dayPerMeter)}`, m*BERTH.dayPerMeter]);
+    if(P.power) rows.push(['Walstroom, overdag', BERTH.dayPower]);
+  } else {
+    rows.push([`Havengeld, ${m} m × ${plural(n,'nacht','nachten')} × ${eur(BERTH.perMeter)}`, m*n*BERTH.perMeter]);
+    rows.push([`Toeristenbelasting, ${P.people} pers. × ${plural(n,'nacht','nachten')}`, P.people*n*BERTH.tax]);
+    if(P.power) rows.push([`Walstroom, ${plural(n,'nacht','nachten')}`, n*BERTH.power]);
+  }
+  return rows;
+}
+const berthTotal = () => { const r = berthLines(); return r ? r.reduce((a,x)=>a+x[1],0) : null; };
+function berthPrice(){
+  const r = berthLines();
+  if(!r) return '<p class="note">Vul de lengte van je boot in, dan zie je wat je verblijf kost.</p>';
+  return priceTable(r) + `<p class="note">Je betaalt bij aankomst op het havenkantoor of bij de betaalzuil op de steiger.${num(P.vlength)<BERTH.minLen?' Boten korter dan 8 m betalen voor 8 m.':''}</p>`;
+}
+function updateBerthPrice(){
+  const el = document.getElementById('berthprice'); if(el) el.innerHTML = berthPrice();
+  const bt = document.getElementById('bartot'); if(bt){ const t = berthTotal(); bt.textContent = t===null ? '—' : eur(t); }
+}
+function inputField(id,label,type,value,error,attrs=''){
+  return `<div class="field"><label class="lbl" for="${id}">${label}</label>
+    <input type="${type}" id="${id}" value="${esc(value)}" ${attrs}>${error?`<span class="err">${error}</span>`:''}</div>`;
+}
+
+function viewBerth(){
+  const E = S.errors;
+  return `
+  <section style="display:grid;gap:8px;padding-top:6px">
+    <h1>Aanmelden als passant</h1>
+    <p class="muted">Vaar je langs en wil je in de Wilgenhaven liggen? Meld je vooraf aan, dan houdt de havenmeester een plek voor je vrij.</p>
+  </section>
+  <p class="proto">Prototype met voorbeeldtarieven. Er wordt niets aangemeld of betaald.</p>
+  <form class="card" onsubmit="event.preventDefault()">
+    <div class="row2">
+      <div class="field"><label class="lbl" for="parrive">Aankomst</label><input type="date" id="parrive" min="${iso(today)}" value="${P.arrive}"></div>
+      <div class="field"><label class="lbl" for="pdepart">Vertrek</label><input type="date" id="pdepart" min="${P.arrive}" value="${P.depart}"></div>
+    </div>
+    <p class="note">${nightsText()}</p>
+    ${E.dates?`<span class="err">${E.dates}</span>`:''}
+    <div class="field"><span class="lbl">Personen aan boord</span>
+      <div class="stepper"><button type="button" data-act="pppl" data-d="-1" aria-label="Eén persoon minder" ${P.people<=1?'disabled':''}>−</button>
+      <output id="pppl">${P.people}</output>
+      <button type="button" data-act="pppl" data-d="1" aria-label="Eén persoon meer" ${P.people>=12?'disabled':''}>+</button></div></div>
+    <label class="check" for="ppower"><input type="checkbox" id="ppower" ${P.power?'checked':''}>
+      <span><b>Walstroom</b> (16 A), ${eur(BERTH.power)} per nacht</span></label>
+  </form>
+  <section class="card"><h3>Havengeld</h3>
+    <dl class="lines">
+      <div><dt>Per meter bootlengte, per nacht</dt><dd>${eur(BERTH.perMeter)}</dd></div>
+      <div><dt>Dagligplaats tot 20:00, per meter</dt><dd>${eur(BERTH.dayPerMeter)}</dd></div>
+      <div><dt>Toeristenbelasting, per persoon per nacht</dt><dd>${eur(BERTH.tax)}</dd></div>
+      <div><dt>Walstroom, per nacht</dt><dd>${eur(BERTH.power)}</dd></div>
+    </dl>
+    <p class="note">Boten korter dan 8 m betalen voor 8 m. Douches, toiletten en wifi zijn inbegrepen.</p>
+  </section>
+  <ul class="facts">
+    <li>${icons.pin}<span><b>Maximaal 15 m lang, 4,5 m breed en 1,60 m diepgang.</b> Grotere boten kunnen helaas niet aanleggen.</span></li>
+    <li>${icons.radio}<span><b>Bij aankomst</b> meld je je via marifoon kanaal 31 of bij het havenkantoor (08:00–20:00).</span></li>
+  </ul>`;
+}
+
+function viewVessel(){
+  const E = S.errors;
+  return `
+  <div class="summary">${stayLine()}</div>
+  <h2>Over je boot</h2>
+  <form class="card" onsubmit="event.preventDefault()" novalidate>
+    ${inputField('vname','Naam van je boot','text',P.vname,E.vname,'autocomplete="off"')}
+    <div class="field"><label class="lbl" for="vtype">Soort boot</label>
+      <select id="vtype">${['Motorboot','Zeilboot','Sloep','Anders'].map(t=>`<option ${t===P.vtype?'selected':''}>${t}</option>`).join('')}</select></div>
+    <div class="dims">
+      ${inputField('vlength','Lengte (m)','text',P.vlength,E.vlength,'inputmode="decimal" placeholder="9,5"')}
+      ${inputField('vbeam','Breedte (m)','text',P.vbeam,E.vbeam,'inputmode="decimal" placeholder="3,2"')}
+      ${inputField('vdraft','Diepgang (m)','text',P.vdraft,E.vdraft,'inputmode="decimal" placeholder="1,1"')}
+    </div>
+    <p class="note">Geef de lengte over alles op, inclusief zwemplateau en preekstoel. Het havengeld is daarop gebaseerd.</p>
+  </form>
+  <section class="card"><h3>Kosten van je verblijf</h3><div id="berthprice">${berthPrice()}</div></section>`;
+}
+
+function viewBerthForm(){
+  const E = S.errors;
+  return `
+  <h2>Jouw gegevens</h2>
+  <form class="card" onsubmit="event.preventDefault()" novalidate>
+    ${inputField('pname','Naam schipper','text',P.pname,E.pname,'autocomplete="name"')}
+    ${inputField('pemail','E-mailadres','email',P.pemail,E.pemail,'autocomplete="email" inputmode="email"')}
+    ${inputField('pphone','Mobiel nummer','tel',P.pphone,E.pphone,'autocomplete="tel" inputmode="tel"')}
+    <p class="note">De havenmeester belt of appt je als er iets verandert aan je ligplaats.</p>
+    <div class="field"><label class="lbl" for="premark">Opmerking <span class="muted" style="font-weight:400">(optioneel)</span></label>
+      <textarea id="premark" placeholder="Bijvoorbeeld: we verwachten rond 17:00 aan te komen">${esc(P.premark)}</textarea></div>
+    <label class="check" for="pagree"><input type="checkbox" id="pagree" ${P.agree?'checked':''}>
+      <span>Ik ga akkoord met het havenreglement.</span></label>
+    ${E.pagree?`<span class="err">${E.pagree}</span>`:''}
+  </form>
+  <section class="card">
+    <h3>${esc(P.vname)} · ${esc(P.vlength)} m</h3>
+    <p class="muted">${stayLine()}</p>
+    ${berthPrice()}
+  </section>`;
+}
+
+function viewBerthDone(){
+  return `
+  <section class="done">
+    <div class="tick"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+    <h1>Je bent aangemeld</h1>
+    <p class="muted">We hebben een bevestiging gestuurd naar <b>${esc(P.pemail)}</b>. <span class="note">(In dit prototype wordt geen e-mail verstuurd.)</span></p>
+  </section>
+  <div class="card">
+    <div><span class="lbl muted" style="font-weight:400">Aanmeldnummer</span><div class="code">${P.code}</div></div>
+    <dl class="specs">
+      <div><dt>Ligplaats</dt><dd>${P.berth}</dd></div>
+      <div><dt>Boot</dt><dd>${esc(P.vname)}</dd></div>
+      <div><dt>Aankomst</dt><dd>${niceDate(P.arrive)}</dd></div>
+      <div><dt>Vertrek</dt><dd>${nights()===0?'Dezelfde dag, uiterlijk 20:00':niceDate(P.depart)}</dd></div>
+    </dl>
+    ${berthPrice()}
+  </div>
+  <section class="card">
+    <h3>Bij aankomst</h3>
+    <ul class="facts">
+      <li>${icons.radio}<span>Meld je via <b>marifoon kanaal 31</b> zodra je de haveningang nadert.</span></li>
+      <li>${icons.pin}<span>Vaar naar <b>${P.berth}</b>. Is die plek toch bezet, dan wijst de havenmeester je een andere.</span></li>
+      <li>${icons.coin}<span>Betaal bij het havenkantoor (08:00–20:00) of bij de betaalzuil op de steiger.</span></li>
+    </ul>
+  </section>`;
+}
+
+function renderBerthBar(){
+  const t = berthTotal();
+  const tot = `<div class="tot"><small>Bij aankomst</small><b id="bartot">${t===null?'—':eur(t)}</b></div>`;
+  document.getElementById('bar').innerHTML = [
+    `<button class="btn" data-act="pnext">Verder naar je boot</button>`,
+    tot + `<button class="btn" data-act="pnext">Verder</button>`,
+    tot + `<button class="btn" data-act="psubmit">Aanmelden</button>`,
+    `<button class="btn ghost" data-act="preset">Nieuwe aanmelding</button>`,
+  ][S.step];
+}
+
+function validateBerth(step){
+  const E = {};
+  if(step===0){
+    const n = nights();
+    if(n<0) E.dates = 'Kies een vertrekdatum op of na je aankomstdatum.';
+    else if(n>BERTH.maxNights) E.dates = `Je kunt je voor maximaal ${BERTH.maxNights} nachten aanmelden. Blijf je langer, neem dan contact op met de havenmeester.`;
+  }
+  if(step===1){
+    const L = num(P.vlength), B = num(P.vbeam), D = num(P.vdraft);
+    if(!P.vname.trim()) E.vname = 'Vul de naam van je boot in.';
+    if(!(L>0)) E.vlength = 'Vul de lengte in meters in.'; else if(L>BERTH.maxLen) E.vlength = 'Boten langer dan 15 m passen niet in de haven.';
+    if(!(B>0)) E.vbeam = 'Vul de breedte in.'; else if(B>BERTH.maxBeam) E.vbeam = 'Maximaal 4,5 m breed.';
+    if(!(D>0)) E.vdraft = 'Vul de diepgang in.'; else if(D>BERTH.maxDraft) E.vdraft = 'Maximaal 1,60 m diepgang.';
+  }
+  if(step===2){
+    if(!P.pname.trim()) E.pname = 'Vul je naam in.';
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(P.pemail.trim())) E.pemail = 'Vul een geldig e-mailadres in, bijvoorbeeld naam@voorbeeld.nl.';
+    if(P.pphone.replace(/\D/g,'').length < 10) E.pphone = 'Vul een telefoonnummer van minstens 10 cijfers in.';
+    if(!P.agree) E.pagree = 'Ga akkoord met het havenreglement om je aan te melden.';
+  }
+  return E;
 }
 
 function go(step){ S.step = step; S.errors = {}; render(); window.scrollTo({top:0}); }
@@ -416,6 +620,18 @@ document.addEventListener('click', e => {
     S.code = 'WH-' + S.date.slice(5).replace('-','') + '-' + String(1000+Math.floor(Math.random()*9000));
     go(4);
   }
+  else if(a==='mode'){ S.mode = t.dataset.m; go(0); }
+  else if(a==='pppl'){ P.people = Math.min(12,Math.max(1,P.people+ +t.dataset.d)); render(); }
+  else if(a==='pnext' || a==='psubmit'){
+    S.errors = validateBerth(S.step);
+    if(Object.keys(S.errors).length){ render(); const first=document.querySelector('.err'); first && first.scrollIntoView({block:'center'}); return; }
+    if(a==='psubmit'){
+      P.code = 'PA-' + P.arrive.slice(5).replace('-','') + '-' + String(1000+Math.floor(Math.random()*9000));
+      P.berth = `Steiger ${num(P.vlength)<=10?'A':'B'}, box ${1 + hash(P.vname+P.arrive)%24}`;
+    }
+    go(S.step+1);
+  }
+  else if(a==='preset'){ Object.assign(P,{vname:'',vlength:'',vbeam:'',vdraft:'',pname:'',pemail:'',pphone:'',premark:'',agree:false,code:'',berth:''}); go(0); }
   else if(a==='reset'){ Object.assign(S,{boatId:null,extras:new Set(['dekens']),name:'',email:'',phone:'',license:'',remark:'',agree:false,code:''}); go(0); }
 });
 
@@ -425,12 +641,26 @@ document.addEventListener('change', e => {
   else if(t.id==='start'){ S.start = +t.value; render(); }
   else if(t.dataset.extra){ t.checked ? S.extras.add(t.dataset.extra) : S.extras.delete(t.dataset.extra); render(); }
   else if(t.id==='agree'){ S.agree = t.checked; }
+  else if(t.id==='parrive'){
+    P.arrive = t.value || iso(tomorrow);
+    if(nights()<0){ const d = new Date(P.arrive+'T12:00'); d.setDate(d.getDate()+1); P.depart = iso(d); }
+    render();
+  }
+  else if(t.id==='pdepart'){ P.depart = t.value || P.arrive; render(); }
+  else if(t.id==='ppower'){ P.power = t.checked; }
+  else if(t.id==='vtype'){ P.vtype = t.value; }
+  else if(t.id==='pagree'){ P.agree = t.checked; }
 });
 document.addEventListener('input', e => {
   const t = e.target;
   if(['name','email','phone','license','remark'].includes(t.id)) S[t.id] = t.value;
+  else if(P_FIELDS.includes(t.id)){ P[t.id] = t.value; if(t.id==='vlength') updateBerthPrice(); }
 });
 
+const MODES = {
+  huur: {labels:STEP_LABELS, views:[viewSearch, viewList, viewDetail, viewForm, viewDone]},
+  passant: {labels:['Verblijf','Je boot','Gegevens'], views:[viewBerth, viewVessel, viewBerthForm, viewBerthDone]},
+};
 render();
 </script>
 </body>
